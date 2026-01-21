@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "lib": ["ES2021"],
+    "types": ["node", "jest"],
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "resolvePackageJsonExports": true,
@@ -15,9 +17,7 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     },
     "incremental": true,
     "skipLibCheck": true,
