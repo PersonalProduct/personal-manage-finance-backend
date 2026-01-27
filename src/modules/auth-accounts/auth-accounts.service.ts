@@ -1,11 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAuthAccountDto } from './dto/create-auth-account.dto';
 import { UpdateAuthAccountDto } from './dto/update-auth-account.dto';
+import { AuthAccount } from '@/modules/auth-accounts/schemas/auth-account.schema';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class AuthAccountsService {
-  create(createAuthAccountDto: CreateAuthAccountDto) {
-    return 'This action adds a new authAccount';
+  constructor(
+    @InjectModel(AuthAccount.name) private authAccountModel: Model<AuthAccount>,
+  ) { }
+
+  async create(createAuthAccountDto: CreateAuthAccountDto) {
+    const { provider, providerUserId, userId, accessToken, refreshToken } = {...createAuthAccountDto};
+    return await this.authAccountModel.create({
+      provider: 'google',
+      providerUserId: providerUserId,
+      userId: userId,
+      accessToken,
+      refreshToken
+    });
   }
 
   findAll() {
@@ -14,6 +28,13 @@ export class AuthAccountsService {
 
   findOne(id: number) {
     return `This action returns a #${id} authAccount`;
+  }
+
+  async findByProviderAndProviderId(
+    provider: string,
+    providerId: string
+  ) {
+    return await this.authAccountModel.findOne({ provider, providerId });
   }
 
   update(id: number, updateAuthAccountDto: UpdateAuthAccountDto) {
