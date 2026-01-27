@@ -9,6 +9,8 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { AuthAccountsModule } from './modules/auth-accounts/auth-accounts.module';
+import { JwtAuthGuard } from '@/modules/auth/passport/jwt-auth.guard';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -24,6 +26,11 @@ import { AuthAccountsModule } from './modules/auth-accounts/auth-accounts.module
     AuthAccountsModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+  {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    }],
 })
 export class AppModule { }

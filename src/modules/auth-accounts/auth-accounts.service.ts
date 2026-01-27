@@ -12,7 +12,7 @@ export class AuthAccountsService {
   ) { }
 
   async create(createAuthAccountDto: CreateAuthAccountDto) {
-    const { provider, providerUserId, userId, accessToken, refreshToken } = {...createAuthAccountDto};
+    const { provider, providerUserId, userId, accessToken, refreshToken } = { ...createAuthAccountDto };
     return await this.authAccountModel.create({
       provider: 'google',
       providerUserId: providerUserId,
@@ -30,11 +30,35 @@ export class AuthAccountsService {
     return `This action returns a #${id} authAccount`;
   }
 
-  async findByProviderAndProviderId(
-    provider: string,
-    providerId: string
-  ) {
-    return await this.authAccountModel.findOne({ provider, providerId });
+  async findByProviderAndProviderId(data: {
+    userId: string;
+    provider: string;
+    providerUserId: string;
+    accessToken?: string;
+    refreshToken?: string;
+  }) {
+    return this.authAccountModel.findOneAndUpdate(
+      {
+        provider: data.provider,
+        providerUserId: data.providerUserId,
+      },
+      {
+        $setOnInsert: {
+          userId: data.userId,
+          provider: data.provider,
+          providerUserId: data.providerUserId,
+        },
+        $set: {
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+        },
+      },
+      {
+        upsert: true,
+        new: true,
+      },
+    );
+
   }
 
   update(id: number, updateAuthAccountDto: UpdateAuthAccountDto) {

@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '@/modules/users/users.service';
 import { AuthAccountsService } from '@/modules/auth-accounts/auth-accounts.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UsersService,
-    private authAccountService: AuthAccountsService
+    private authAccountService: AuthAccountsService,
+    private jwtService: JwtService,
   ) { }
 
   async googleLogin(googleData: {
@@ -18,20 +20,7 @@ export class AuthService {
     accessToken?: string;
     refreshToken?: string;
   }) {
-    var existAccount = await this.authAccountService.findByProviderAndProviderId(
-      googleData.provider,
-      googleData.providerId
-    );
-
-    if (existAccount) {
-      return {
-        userId: existAccount.userId,
-        message: 'User logged in successfully',
-      };
-    }
-
     var existUser = await this.userService.findByEmail(googleData.email);
-
     if (!existUser) {
       existUser = await this.userService.create({
         email: googleData.email,
@@ -39,17 +28,21 @@ export class AuthService {
         avatarUrl: googleData.avatarUrl,
       });
     }
-    await this.authAccountService.create({
-      userId: existUser.id,
-      provider: googleData.provider,
-      providerUserId: googleData.providerId,
-      accessToken: googleData.accessToken,
-      refreshToken: googleData.refreshToken,
-    });
+
+    var existAccount = await this.authAccountService.findByProviderAndProviderId(
+      {
+        userId: existUser.id,
+        provider: googleData.provider,
+        providerUserId: googleData.providerId,
+        accessToken: googleData.accessToken,
+        refreshToken: googleData.refreshToken,
+      }
+    );
 
     return {
-      userId: existUser.id,
+      userId: existAccount.userId,
       message: 'User registered and logged in successfully',
+      accessToken: this.jwtService.sign({ userId: existAccount.id }),
     };
   }
 }
