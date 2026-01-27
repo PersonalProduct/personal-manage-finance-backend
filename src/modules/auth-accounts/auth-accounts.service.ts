@@ -30,7 +30,7 @@ export class AuthAccountsService {
     return `This action returns a #${id} authAccount`;
   }
 
-  async findByProviderAndProviderId(data: {
+  async upsertOAuthAccount(data: {
     userId: string;
     provider: string;
     providerUserId: string;

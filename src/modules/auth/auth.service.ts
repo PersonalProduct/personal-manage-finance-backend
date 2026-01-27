@@ -29,7 +29,7 @@ export class AuthService {
       });
     }
 
-    var existAccount = await this.authAccountService.findByProviderAndProviderId(
+    var existAccount = await this.authAccountService.upsertOAuthAccount(
       {
         userId: existUser.id,
         provider: 'google',
