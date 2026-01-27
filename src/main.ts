@@ -8,6 +8,7 @@ async function bootstrap() {
     origin: process.env.CLIENT_URL || 'http://localhost:3000',
     credentials: true,
   })
+  app.setGlobalPrefix('api/v1.0', { exclude: [''] });
   await app.listen(process.env.PORT ?? 8080);
 }
 bootstrap();

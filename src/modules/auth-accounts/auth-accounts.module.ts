@@ -12,5 +12,6 @@ import { AuthAccount, AuthAccountSchema } from './schemas/auth-account.schema';
   ],
   controllers: [AuthAccountsController],
   providers: [AuthAccountsService],
+  exports: [AuthAccountsService],
 })
 export class AuthAccountsModule { }
