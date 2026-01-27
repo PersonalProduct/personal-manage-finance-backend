@@ -32,7 +32,7 @@ export class AuthService {
     var existAccount = await this.authAccountService.findByProviderAndProviderId(
       {
         userId: existUser.id,
-        provider: googleData.provider,
+        provider: 'google',
         providerUserId: googleData.providerId,
         accessToken: googleData.accessToken,
         refreshToken: googleData.refreshToken,
