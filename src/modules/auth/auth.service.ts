@@ -15,7 +15,9 @@ export class AuthService {
     provider: 'google';
     providerId: string;
     email: string;
-    fullName: string;
+    firstName: string;
+    middleName: string;
+    lastName: string;
     avatarUrl?: string;
     accessToken?: string;
     refreshToken?: string;
@@ -24,7 +26,9 @@ export class AuthService {
     if (!existUser) {
       existUser = await this.userService.create({
         email: googleData.email,
-        firstName: googleData.fullName,
+        firstName: googleData.firstName,
+        midName: googleData.middleName,
+        lastName: googleData.lastName,
         avatarUrl: googleData.avatarUrl,
       });
     }
