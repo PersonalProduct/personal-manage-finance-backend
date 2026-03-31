@@ -1,11 +1,39 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Transaction } from '@/modules/transactions/schemas/transaction.schema';
+import { Model } from 'mongoose';
+import { WalletService } from '@/modules/wallet/wallet.service';
 
 @Injectable()
 export class TransactionsService {
-  create(createTransactionDto: CreateTransactionDto) {
-    return 'This action adds a new transaction';
+  constructor(
+    @InjectModel(Transaction.name) private transactionModel: Model<Transaction>,
+    private walletService: WalletService
+  ) { }
+
+  async create(createTransactionDto: CreateTransactionDto) {
+    const session = await this.transactionModel.db.startSession();
+
+    try {
+      session.startTransaction();
+      const transaction = await this.transactionModel.create([createTransactionDto], { session });
+      await this.walletService.updateBalance(
+        createTransactionDto.walletId,
+        createTransactionDto.type,
+        createTransactionDto.amount,
+        session);
+
+      await session.commitTransaction();
+      return transaction;
+
+    } catch (error) {
+      session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 
   findAll() {
