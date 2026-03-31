@@ -4,10 +4,13 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const port = process.env.PORT || 8080;
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
+      transform: true
     }),
   );
   app.enableCors({
@@ -15,7 +18,9 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   })
-  app.setGlobalPrefix('api/v1.0', { exclude: [''] });
-  await app.listen(process.env.PORT ?? 8080);
+  app.setGlobalPrefix('api', { exclude: [''] });
+  await app.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`);
+  });
 }
 bootstrap();
