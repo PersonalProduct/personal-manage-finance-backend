@@ -74,7 +74,7 @@ export class WalletService {
     return await wallet.save();
   }
 
-  async updateBalance(id: string, newBalance: number) {
+  async updateBalance(id: string, transactionType: string, newBalance: number, session: any) {
     if (!id) {
       throw new BadRequestException('Invalid data request.');
     }
@@ -82,13 +82,19 @@ export class WalletService {
       throw new BadRequestException('Invalid balance value.');
     }
 
-    const wallet = await this.walletModel.findOne({ _id: new Types.ObjectId(id), active: true });
-    if (!wallet) {
-      throw new BadRequestException('Wallet not found.');
+    const updated = await this.walletModel.findOneAndUpdate(
+      { _id: new Types.ObjectId(id), active: true },
+      {
+        $inc: {
+          currentBalance: transactionType === 'income' ? newBalance : -newBalance,
+        },
+      },
+      { new: true, session }
+    );
+    if (!updated) {
+      throw new NotFoundException('Wallet not found.');
     }
-
-    wallet.currentBalance = newBalance;
-    return await wallet.save();
+    return updated;
   }
 
   async remove(id: string) {

@@ -9,31 +9,34 @@ export type TransactionDocument = Transaction & Document
 
 @Schema({ timestamps: { createdAt: true, updatedAt: false } })
 export class Transaction {
-    @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-    userId: Types.ObjectId
+    // @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+    // userId!: Types.ObjectId
 
     @Prop({ type: Types.ObjectId, ref: Wallet.name, required: true })
-    walletId: Types.ObjectId
+    walletId!: Types.ObjectId
 
     @Prop({ type: Types.ObjectId, ref: Category.name, required: true })
-    categoryId: Types.ObjectId
+    categoryId!: Types.ObjectId
 
     @Prop({ required: true, enum: ['income', 'expense'] })
-    type: 'income' | 'expense'
+    type!: 'income' | 'expense'
 
     @Prop({ required: true })
-    amount: number
+    amount!: number
 
     @Prop({ required: true })
-    reason: string
+    reason!: string
 
     @Prop({ required: true })
-    date: Date
+    date!: Date
+
+    @Prop()
+    media?: string
 }
 
 export const TransactionSchema =
     SchemaFactory.createForClass(Transaction)
 
 // index cho report
-TransactionSchema.index({ userId: 1, date: -1 })
+// TransactionSchema.index({ userId: 1, date: -1 })
 TransactionSchema.index({ walletId: 1, date: -1 })
