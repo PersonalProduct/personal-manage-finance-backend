@@ -3,6 +3,7 @@ import { WalletService } from './wallet.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { UpdateWalletDto } from './dto/update-wallet.dto';
 import { JwtService } from '@nestjs/jwt';
+import { Public } from '@/decorator/customize';
 
 @Controller('wallets')
 export class WalletController {

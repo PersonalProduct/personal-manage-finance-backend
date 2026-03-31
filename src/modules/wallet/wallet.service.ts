@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { UpdateWalletDto } from './dto/update-wallet.dto';
 import { Model, Types } from 'mongoose';
@@ -21,7 +21,8 @@ export class WalletService {
       userId: new Types.ObjectId(userId),
       name,
       type,
-      initBalance
+      initBalance,
+      currentBalance: initBalance,
     });
   }
 
@@ -31,36 +32,73 @@ export class WalletService {
     if (!pageSize) pageSize = 10;
     const skip = (current - 1) * pageSize;
 
-    const filter = { userId: new Types.ObjectId(id) };
+    const filter = { userId: new Types.ObjectId(id), active: true };
 
-    return await this.walletModel.find(filter).skip(skip).limit(pageSize).sort({ createAt: -1 });
+    const result = await this.walletModel
+      .find(filter)
+      .skip(skip)
+      .limit(pageSize)
+      .sort({ createAt: -1 });
+    return {
+      meta: {
+        current,
+        pageSize,
+        total: await this.walletModel.countDocuments(filter)
+      },
+      data: result,
+    }
   }
 
   async findOne(id: string) {
     if (!id) {
       throw new BadRequestException('Invalid data request.');
     }
-    return await this.walletModel.findOne({ _id: new Types.ObjectId(id) });
+    const wallet = await this.walletModel.findOne({ _id: new Types.ObjectId(id), active: true });
+    if (!wallet) {
+      throw new NotFoundException('Wallet not found.');
+    }
+    return wallet;
   }
 
   async update(id: string, updateWalletDto: UpdateWalletDto) {
     if (!id) {
       throw new BadRequestException('Invalid data request.');
     }
-    return await this.walletModel.findOneAndUpdate({
-      _id: new Types.ObjectId(id)
-    }, {
-      name: updateWalletDto.name,
-      type: updateWalletDto.type
-    }, {
-      new: false
-    });
+    let wallet = await this.walletModel.findOne({ _id: new Types.ObjectId(id), active: true });
+    if (!wallet) {
+      throw new NotFoundException('Wallet not found.');
+    }
+    const { name, type } = { ...updateWalletDto };
+    wallet.name = name || wallet.name;
+    wallet.type = type || wallet.type;
+    return await wallet.save();
+  }
+
+  async updateBalance(id: string, newBalance: number) {
+    if (!id) {
+      throw new BadRequestException('Invalid data request.');
+    }
+    if (newBalance < 0) {
+      throw new BadRequestException('Invalid balance value.');
+    }
+
+    const wallet = await this.walletModel.findOne({ _id: new Types.ObjectId(id), active: true });
+    if (!wallet) {
+      throw new BadRequestException('Wallet not found.');
+    }
+
+    wallet.currentBalance = newBalance;
+    return await wallet.save();
   }
 
   async remove(id: string) {
     if (!id) {
       throw new BadRequestException('Invalid data request.');
     }
-    return await this.walletModel.findOneAndDelete({ _id: new Types.ObjectId(id) });
+    return await this.walletModel.findOneAndUpdate(
+      { _id: new Types.ObjectId(id) },
+      { active: false },
+      { new: true }
+    );
   }
 }

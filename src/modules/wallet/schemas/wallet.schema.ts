@@ -7,22 +7,25 @@ export type WalletDocument = Wallet & Document
 @Schema({ timestamps: true })
 export class Wallet {
     @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-    userId: Types.ObjectId
+    userId!: Types.ObjectId
 
     @Prop({ required: true })
-    name: string
+    name!: string
 
     @Prop({ required: true })
-    initBalance: number
+    initBalance!: number
+
+    @Prop({ required: true })
+    currentBalance!: number
 
     @Prop({
         required: true,
         enum: ['bank', 'cash', 'save', 'other'],
     })
-    type: 'bank' | 'cash' | 'save' | 'other'
+    type!: 'bank' | 'cash' | 'save' | 'other'
 
     @Prop({ default: true })
-    active: boolean
+    active!: boolean
 }
 
 export const WalletSchema = SchemaFactory.createForClass(Wallet)
